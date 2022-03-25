@@ -57,6 +57,17 @@ class QuoteModel(db.Model):
         }
 
 
+# AUTHORS
+@app.route("/authors", methods=["POST"])
+def create_author():
+    author_data = request.json
+    author = AuthorModel(**author_data)
+    db.session.add(author)
+    db.session.commit()
+    return author.to_dict(), 201
+
+
+# QUOTES
 #                      .to_dict()        jsonify()
 # Сериализация: object ----------> dict ----------> json
 @app.route("/quotes")
@@ -75,14 +86,14 @@ def get_quote_by_id(quote_id):
     return jsonify(quote.to_dict()), 200
 
 
-@app.route("/quotes", methods=["POST"])
-def create_quote():
-    quote_data = request.json
-    # quote = QuoteModel(author=quote_data["author"], text=quote_data["text"])
-    quote = QuoteModel(**quote_data)
-    db.session.add(quote)
+@app.route("/authors/<int:author_id>/quotes", methods=["POST"])
+def create_quote(author_id):
+    author = AuthorModel.query.get(author_id)
+    new_quote = request.json
+    q = QuoteModel(author, new_quote["text"])
+    db.session.add(q)
     db.session.commit()
-    return jsonify(quote.to_dict()), 201
+    return jsonify(q.to_dict()), 201
 
 
 @app.route("/quotes/<int:quote_id>", methods=['PUT'])
