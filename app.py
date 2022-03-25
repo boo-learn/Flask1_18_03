@@ -1,3 +1,4 @@
+import os
 from flask import Flask, jsonify, abort, request, g
 from pathlib import Path
 from flask_sqlalchemy import SQLAlchemy
@@ -9,7 +10,13 @@ BASE_DIR = Path(__file__).parent
 
 app = Flask(__name__)
 app.config['JSON_AS_ASCII'] = False
-app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{BASE_DIR / 'main.db'}"
+
+if os.environ.get('DATABASE_URL'):
+    path_to_db = os.environ.get('DATABASE_URL').replace("://", "ql://", 1)
+else:
+    path_to_db = f"sqlite:///{BASE_DIR / 'main.db'}"
+app.config['SQLALCHEMY_DATABASE_URI'] = path_to_db
+
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
